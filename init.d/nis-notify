@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# /etc/init.d/nis-notify	Start NIS notifier daemon.
+#
+### BEGIN INIT INFO
+# Provides:		nis-notify
+# Required-Start:	$network $portmap
+# Required-Stop:	$portmap
+# Default-Start:	2 3 4 5
+# Default-Stop:		1
+# Short-Description:	Start NIS notifier daemon.
+# Description:		Start NIS notifier daemon. The NIS notifier
+#			automatically updates the NIS database whenever
+#			one of /etc/passwd, /etc/group or /etc/shadow
+#                       changes.
+### END INIT INFO
+
+# Customize the variables in /etc/default/nis-notify rather than here
+if [ -d /var/yp ]
+then
+	STARTNISMONITOR=true
+else
+	STARTNISMONITOR=false
+fi
+NISMONITORARGS=""
+
+[ -f /etc/default/nis-notify ] && . /etc/default/nis-notify
+
+. /lib/lsb/init-functions
+
+DAEMON="/usr/local/sbin/nis-notify"
+
+do_start ()
+{
+	log_daemon_msg "Starting NIS notifier"
+	if [ "$STARTNISMONITOR" != "false" ]
+	then
+		log_progress_msg "nis-notify"
+		start-stop-daemon --start --quiet \
+			--pidfile /var/run/nis-notify.pid --exec "$DAEMON" \
+			-- ${NISMONITORARGS}
+	fi
+	log_end_msg 0
+}
+
+do_stop () {
+	log_daemon_msg "Stopping NIS notifier"
+	log_progress_msg "nis-notify"
+	start-stop-daemon --stop --quiet --oknodo \
+		--pidfile /var/run/nis-notify.pid
+	log_end_msg 0
+}
+
+# Set 'manual' to indicate if we were started by hand.
+case "$0" in
+	*/S[0-9][0-9]*|*/K[0-9][0-9]*)
+		manual=
+		;;
+	*)
+		manual=1
+		;;
+esac
+
+case "$1" in
+  start)
+	do_start
+	;;
+  stop)
+	do_stop
+	;;
+#  reload|force-reload)
+#	start-stop-daemon --stop --quiet --oknodo --signal 1 \
+#		--pidfile /var/run/nis-notify.pid --exec "$DAEMON"
+#	;;
+  restart)
+	do_stop
+	sleep 2
+	do_start
+	;;
+  *)
+	echo "Usage: /etc/init.d/nis-notify {start|stop|restart}"
+	exit 1
+esac
+
+exit 0
+
