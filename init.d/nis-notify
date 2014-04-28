@@ -7,7 +7,7 @@
 # Required-Start:	$network $portmap
 # Required-Stop:	$portmap
 # Default-Start:	2 3 4 5
-# Default-Stop:		1
+# Default-Stop:		0 1 6
 # Short-Description:	Start NIS notifier daemon.
 # Description:		Start NIS notifier daemon. The NIS notifier
 #			automatically updates the NIS database whenever
